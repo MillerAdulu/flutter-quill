@@ -117,7 +117,7 @@ class Document {
     return block.queryChild(res.offset, true);
   }
 
-  compose(Delta delta, ChangeSource changeSource) {
+  void compose(Delta delta, ChangeSource changeSource) {
     assert(!_observer.isClosed);
     delta.trim();
     assert(delta.isNotEmpty);
@@ -144,11 +144,11 @@ class Document {
     try {
       _delta = _delta.compose(delta);
     } catch (e) {
-      throw ('_delta compose failed');
+      throw '_delta compose failed';
     }
 
     if (_delta != _root.toDelta()) {
-      throw ('Compose failed');
+      throw 'Compose failed';
     }
     final change = Tuple3(originalDelta, delta, changeSource);
     _observer.add(change);
@@ -163,9 +163,9 @@ class Document {
     return _history.redo(this);
   }
 
-  get hasUndo => _history.hasUndo;
+  bool get hasUndo => _history.hasUndo;
 
-  get hasRedo => _history.hasRedo;
+  bool get hasRedo => _history.hasRedo;
 
   static Delta _transform(Delta delta) {
     Delta res = Delta();
@@ -183,7 +183,7 @@ class Document {
     bool nextOpIsImage =
         i + 1 < ops.length && ops[i + 1].isInsert && ops[i + 1].data is! String;
     if (nextOpIsImage && !(op.data as String).endsWith('\n')) {
-      res.push(Operation.insert('\n', null));
+      res.push(Operation.insert('\n'));
     }
     // Currently embed is equivalent to image and hence `is! String`
     bool opInsertImage = op.isInsert && op.data is! String;
@@ -193,7 +193,7 @@ class Document {
         (ops[i + 1].data as String).startsWith('\n');
     if (opInsertImage && (i + 1 == ops.length - 1 || !nextOpIsLineBreak)) {
       // automatically append '\n' for image
-      res.push(Operation.insert('\n', null));
+      res.push(Operation.insert('\n'));
     }
   }
 
@@ -208,14 +208,14 @@ class Document {
     return Embeddable.fromJson(data as Map<String, dynamic>);
   }
 
-  close() {
+  void close() {
     _observer.close();
     _history.clear();
   }
 
-  String toPlainText() => _root.children.map((e) => e.toPlainText()).join('');
+  String toPlainText() => _root.children.map((e) => e.toPlainText()).join();
 
-  _loadDocument(Delta doc) {
+  void _loadDocument(Delta doc) {
     assert((doc.last.data as String).endsWith('\n'));
     int offset = 0;
     for (final op in doc.toList()) {

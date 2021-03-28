@@ -89,7 +89,7 @@ class CursorCont extends ChangeNotifier {
   }
 
   @override
-  dispose() {
+  void dispose() {
     _blinkOpacityCont.removeListener(_onColorTick);
     stopCursorTimer();
     _blinkOpacityCont.dispose();
@@ -97,7 +97,7 @@ class CursorCont extends ChangeNotifier {
     super.dispose();
   }
 
-  _cursorTick(Timer timer) {
+  void _cursorTick(Timer timer) {
     _targetCursorVisibility = !_targetCursorVisibility;
     double targetOpacity = _targetCursorVisibility ? 1.0 : 0.0;
     if (style.opacityAnimates) {
@@ -107,9 +107,10 @@ class CursorCont extends ChangeNotifier {
     }
   }
 
-  _cursorWaitForStart(Timer timer) {
+  void _cursorWaitForStart(Timer timer) {
     _cursorTimer?.cancel();
-    _cursorTimer = Timer.periodic(Duration(milliseconds: 500), _cursorTick);
+    _cursorTimer =
+        Timer.periodic(const Duration(milliseconds: 500), _cursorTick);
   }
 
   void startCursorTimer() {
@@ -117,14 +118,15 @@ class CursorCont extends ChangeNotifier {
     _blinkOpacityCont.value = 1.0;
 
     if (style.opacityAnimates) {
-      _cursorTimer =
-          Timer.periodic(Duration(milliseconds: 150), _cursorWaitForStart);
+      _cursorTimer = Timer.periodic(
+          const Duration(milliseconds: 150), _cursorWaitForStart);
     } else {
-      _cursorTimer = Timer.periodic(Duration(milliseconds: 500), _cursorTick);
+      _cursorTimer =
+          Timer.periodic(const Duration(milliseconds: 500), _cursorTick);
     }
   }
 
-  stopCursorTimer({bool resetCharTicks = true}) {
+  void stopCursorTimer({bool resetCharTicks = true}) {
     _cursorTimer?.cancel();
     _cursorTimer = null;
     _targetCursorVisibility = false;
@@ -136,7 +138,7 @@ class CursorCont extends ChangeNotifier {
     }
   }
 
-  startOrStopCursorTimerIfNeeded(bool hasFocus, TextSelection selection) {
+  void startOrStopCursorTimerIfNeeded(bool hasFocus, TextSelection selection) {
     if (show.value &&
         _cursorTimer == null &&
         hasFocus &&
@@ -147,7 +149,7 @@ class CursorCont extends ChangeNotifier {
     }
   }
 
-  _onColorTick() {
+  void _onColorTick() {
     color.value = _style.color.withOpacity(_blinkOpacityCont.value);
     _blink.value = show.value && _blinkOpacityCont.value > 0;
   }
@@ -163,7 +165,7 @@ class CursorPainter {
   CursorPainter(this.editable, this.style, this.prototype, this.color,
       this.devicePixelRatio);
 
-  paint(Canvas canvas, Offset offset, TextPosition position) {
+  void paint(Canvas canvas, Offset offset, TextPosition position) {
     assert(prototype != null);
 
     Offset caretOffset =

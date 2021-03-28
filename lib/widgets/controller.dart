@@ -18,7 +18,9 @@ class QuillController extends ChangeNotifier {
 
   factory QuillController.basic() {
     return QuillController(
-        document: Document(), selection: TextSelection.collapsed(offset: 0));
+      document: Document(),
+      selection: const TextSelection.collapsed(offset: 0),
+    );
   }
 
   // item1: Document state before [change].
@@ -31,7 +33,6 @@ class QuillController extends ChangeNotifier {
   TextEditingValue get plainTextEditingValue => TextEditingValue(
         text: document.toPlainText(),
         selection: selection,
-        composing: TextRange.empty,
       );
 
   Style getSelectionStyle() {
@@ -54,7 +55,7 @@ class QuillController extends ChangeNotifier {
       // updateSelection(
       //     TextSelection.collapsed(offset: document.length), ChangeSource.LOCAL);
       updateSelection(
-          TextSelection.collapsed(offset: this.selection.baseOffset + len!),
+          TextSelection.collapsed(offset: selection.baseOffset + len!),
           ChangeSource.LOCAL);
     } else {
       // no need to move cursor
@@ -69,21 +70,17 @@ class QuillController extends ChangeNotifier {
     }
   }
 
-  get hasUndo => document.hasUndo;
+  bool get hasUndo => document.hasUndo;
 
-  get hasRedo => document.hasRedo;
+  bool get hasRedo => document.hasRedo;
 
-  replaceText(int index, int len, Object? data, TextSelection? textSelection) {
+  void replaceText(
+      int index, int len, Object? data, TextSelection? textSelection) {
     assert(data is String || data is Embeddable);
 
     Delta? delta;
     if (len > 0 || data is! String || data.isNotEmpty) {
-      try {
-        delta = document.replace(index, len, data);
-      } catch (e) {
-        print('document.replace failed: $e');
-        throw e;
-      }
+      delta = document.replace(index, len, data);
       bool shouldRetainDelta = toggledStyle.isNotEmpty &&
           delta.isNotEmpty &&
           delta.length <= 2 &&
@@ -112,29 +109,24 @@ class QuillController extends ChangeNotifier {
       if (delta == null || delta.isEmpty) {
         _updateSelection(textSelection, ChangeSource.LOCAL);
       } else {
-        try {
-          Delta user = Delta()
-            ..retain(index)
-            ..insert(data)
-            ..delete(len);
-          int positionDelta = getPositionDelta(user, delta);
-          _updateSelection(
-            textSelection.copyWith(
-              baseOffset: textSelection.baseOffset + positionDelta,
-              extentOffset: textSelection.extentOffset + positionDelta,
-            ),
-            ChangeSource.LOCAL,
-          );
-        } catch (e) {
-          print('getPositionDelta or getPositionDelta error: $e');
-          throw e;
-        }
+        Delta user = Delta()
+          ..retain(index)
+          ..insert(data)
+          ..delete(len);
+        int positionDelta = getPositionDelta(user, delta);
+        _updateSelection(
+          textSelection.copyWith(
+            baseOffset: textSelection.baseOffset + positionDelta,
+            extentOffset: textSelection.extentOffset + positionDelta,
+          ),
+          ChangeSource.LOCAL,
+        );
       }
     }
     notifyListeners();
   }
 
-  formatText(int index, int len, Attribute? attribute) {
+  void formatText(int index, int len, Attribute? attribute) {
     if (len == 0 &&
         attribute!.isInline &&
         attribute.key != Attribute.link.key) {
@@ -151,16 +143,16 @@ class QuillController extends ChangeNotifier {
     notifyListeners();
   }
 
-  formatSelection(Attribute? attribute) {
+  void formatSelection(Attribute? attribute) {
     formatText(selection.start, selection.end - selection.start, attribute);
   }
 
-  updateSelection(TextSelection textSelection, ChangeSource source) {
+  void updateSelection(TextSelection textSelection, ChangeSource source) {
     _updateSelection(textSelection, source);
     notifyListeners();
   }
 
-  compose(Delta delta, TextSelection textSelection, ChangeSource source) {
+  void compose(Delta delta, TextSelection textSelection, ChangeSource source) {
     if (delta.isNotEmpty) {
       document.compose(delta, source);
     }
@@ -182,7 +174,7 @@ class QuillController extends ChangeNotifier {
     super.dispose();
   }
 
-  _updateSelection(TextSelection textSelection, ChangeSource source) {
+  void _updateSelection(TextSelection textSelection, ChangeSource source) {
     selection = textSelection;
     int end = document.length - 1;
     selection = selection.copyWith(

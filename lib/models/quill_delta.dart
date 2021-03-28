@@ -118,7 +118,7 @@ class Operation {
   bool get isRetain => key == Operation.retainKey;
 
   /// Returns `true` if this operation has no attributes, e.g. is plain text.
-  bool get isPlain => (_attributes == null || _attributes!.isEmpty);
+  bool get isPlain => _attributes == null || _attributes!.isEmpty;
 
   /// Returns `true` if this operation sets at least one attribute.
   bool get isNotPlain => !isPlain;
@@ -294,7 +294,7 @@ class Delta {
     if (other is! Delta) return false;
     Delta typedOther = other;
     final comparator =
-        ListEquality<Operation>(const DefaultEquality<Operation>());
+        const ListEquality<Operation>(DefaultEquality<Operation>());
     return comparator.equals(_operations, typedOther._operations);
   }
 
@@ -520,7 +520,7 @@ class Delta {
       if (op.isInsert) {
         inverted.delete(op.length!);
       } else if (op.isRetain && op.isPlain) {
-        inverted.retain(op.length!, null);
+        inverted.retain(op.length!);
         baseIndex += op.length!;
       } else if (op.isDelete || (op.isRetain && op.isNotPlain)) {
         final length = op.length!;

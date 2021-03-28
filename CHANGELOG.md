@@ -1,3 +1,18 @@
+## [1.1.4]
+* Fix text selection issue.
+
+## [1.1.3]
+* Update example folder.
+
+## [1.1.2]
+* Add pedantic.
+
+## [1.1.1]
+* Base64 image support.
+
+## [1.1.0]
+* Support null safety.
+
 ## [1.0.9]
 * Web support for raw editor and keyboard listener.
 

@@ -10,7 +10,9 @@ FlutterQuill is a rich text editor and a [Quill] component for [Flutter].
   
 This library is a WYSIWYG editor built for the modern mobile platform, with web compatibility under development. You can join our [Slack Group] for discussion.
 
-https://pub.dev/packages/flutter_quill
+Demo App: https://bulletjournal.us/home/index.html
+
+Pub: https://pub.dev/packages/flutter_quill
 
 ## Usage 
 
@@ -70,20 +72,22 @@ The `QuillToolbar` class lets you customise which formatting options are availab
 
 ## Web
 
-For web development, use `flutter config --enable-web` for flutter and use [ReactQuill] for React.  
+For web development, use `flutter config --enable-web` for flutter and use [ReactQuill] for React.
+
+## Migrate Zefyr Data
+
+Check out [code](https://github.com/jwehrle/zefyr_quill_convert) and [doc](https://docs.google.com/document/d/1FUSrpbarHnilb7uDN5J5DDahaI0v1RMXBjj4fFSpSuY/edit?usp=sharing).
   
 ---  
   
 <img width="484" alt="1" src="https://user-images.githubusercontent.com/122956/103142422-9bb19c80-46b7-11eb-83e4-dd0538a9236e.png">  
 <img width="484" alt="1" src="https://user-images.githubusercontent.com/122956/103142455-0531ab00-46b8-11eb-89f8-26a77de9227f.png">  
 <img width="484" alt="1" src="https://user-images.githubusercontent.com/122956/102963021-f28f5a00-449c-11eb-8f5f-6e9dd60844c4.png">  
-<img width="484" alt="1" src="https://user-images.githubusercontent.com/122956/102977404-c9c88e00-44b7-11eb-9423-b68f3b30b0e0.png">  
-  
-One client and affiliated collaborator of **[FlutterQuill]** is Bullet Journal App: https://bulletjournal.us/home/index.html 
+<img width="484" alt="1" src="https://user-images.githubusercontent.com/122956/102977404-c9c88e00-44b7-11eb-9423-b68f3b30b0e0.png">
   
 [Quill]: https://quilljs.com/docs/formats
 [Flutter]: https://github.com/flutter/flutter  
 [FlutterQuill]: https://pub.dev/packages/flutter_quill  
 [ReactQuill]: https://github.com/zenoamaro/react-quill  
 [Slack Group]: https://join.slack.com/t/bulletjournal1024/shared_invite/zt-fys7t9hi-ITVU5PGDen1rNRyCjdcQ2g
-[Sample Page]: https://github.com/singerdmx/flutter-quill/blob/master/app/lib/pages/home_page.dart
+[Sample Page]: https://github.com/singerdmx/flutter-quill/blob/master/example/lib/pages/home_page.dart

@@ -18,7 +18,7 @@ abstract class Rule {
         len: len, data: data, attribute: attribute);
   }
 
-  validateArgs(int? len, Object? data, Attribute? attribute);
+  void validateArgs(int? len, Object? data, Attribute? attribute);
 
   Delta? applyRule(Delta document, int index,
       {int? len, Object? data, Attribute? attribute});
@@ -29,21 +29,21 @@ abstract class Rule {
 class Rules {
   final List<Rule> _rules;
   static final Rules _instance = Rules([
-    FormatLinkAtCaretPositionRule(),
-    ResolveLineFormatRule(),
-    ResolveInlineFormatRule(),
-    InsertEmbedsRule(),
-    ForceNewlineForInsertsAroundEmbedRule(),
-    AutoExitBlockRule(),
-    PreserveBlockStyleOnInsertRule(),
-    PreserveLineStyleOnSplitRule(),
-    ResetLineFormatOnNewLineRule(),
-    AutoFormatLinksRule(),
-    PreserveInlineStylesRule(),
-    CatchAllInsertRule(),
-    EnsureEmbedLineRule(),
-    PreserveLineStyleOnMergeRule(),
-    CatchAllDeleteRule(),
+    const FormatLinkAtCaretPositionRule(),
+    const ResolveLineFormatRule(),
+    const ResolveInlineFormatRule(),
+    const InsertEmbedsRule(),
+    const ForceNewlineForInsertsAroundEmbedRule(),
+    const AutoExitBlockRule(),
+    const PreserveBlockStyleOnInsertRule(),
+    const PreserveLineStyleOnSplitRule(),
+    const ResetLineFormatOnNewLineRule(),
+    const AutoFormatLinksRule(),
+    const PreserveInlineStylesRule(),
+    const CatchAllInsertRule(),
+    const EnsureEmbedLineRule(),
+    const PreserveLineStyleOnMergeRule(),
+    const CatchAllDeleteRule(),
   ]);
 
   Rules(this._rules);
@@ -61,13 +61,12 @@ class Rules {
         final result = rule.apply(delta, index,
             len: len, data: data, attribute: attribute);
         if (result != null) {
-          print("Rule $rule applied");
           return result..trim();
         }
       } catch (e) {
-        throw e;
+        rethrow;
       }
     }
-    throw ('Apply rules failed');
+    throw 'Apply rules failed';
   }
 }

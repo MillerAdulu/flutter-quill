@@ -7,7 +7,7 @@ class BaselineProxy extends SingleChildRenderObjectWidget {
   final TextStyle? textStyle;
   final EdgeInsets? padding;
 
-  BaselineProxy({Key? key, Widget? child, this.textStyle, this.padding})
+  const BaselineProxy({Key? key, Widget? child, this.textStyle, this.padding})
       : super(key: key, child: child);
 
   @override
@@ -66,14 +66,14 @@ class RenderBaselineProxy extends RenderProxyBox {
   // SEE What happens + _padding?.top;
 
   @override
-  performLayout() {
+  void performLayout() {
     super.performLayout();
     _prototypePainter.layout();
   }
 }
 
 class EmbedProxy extends SingleChildRenderObjectWidget {
-  EmbedProxy(Widget child) : super(child: child);
+  const EmbedProxy(Widget child) : super(child: child);
 
   @override
   RenderEmbedProxy createRenderObject(BuildContext context) =>
@@ -113,7 +113,7 @@ class RenderEmbedProxy extends RenderProxyBox implements RenderContentProxyBox {
 
   @override
   TextRange getWordBoundary(TextPosition position) =>
-      TextRange(start: 0, end: 1);
+      const TextRange(start: 0, end: 1);
 
   @override
   double getPreferredLineHeight() {
@@ -145,7 +145,7 @@ class RichTextProxy extends SingleChildRenderObjectWidget {
         textHeightBehavior);
   }
 
-  RichTextProxy(
+  const RichTextProxy(
       RichText child,
       this.textStyle,
       this.textAlign,
@@ -289,7 +289,7 @@ class RenderParagraphProxy extends RenderProxyBox
       child!.getBoxesForSelection(selection);
 
   @override
-  performLayout() {
+  void performLayout() {
     super.performLayout();
     _prototypePainter.layout(
         minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);

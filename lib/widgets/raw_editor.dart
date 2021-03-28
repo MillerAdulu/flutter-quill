@@ -55,7 +55,7 @@ class RawEditor extends StatefulWidget {
   final ScrollPhysics? scrollPhysics;
   final EmbedBuilder embedBuilder;
 
-  RawEditor(
+  const RawEditor(
       Key key,
       this.controller,
       this.focusNode,
@@ -100,7 +100,7 @@ class RawEditorState extends EditorState
         WidgetsBindingObserver,
         TickerProviderStateMixin<RawEditor>
     implements TextSelectionDelegate, TextInputClient {
-  GlobalKey _editorKey = GlobalKey();
+  final GlobalKey _editorKey = GlobalKey();
   final List<TextEditingValue> _sentRemoteValues = [];
   TextInputConnection? _textInputConnection;
   TextEditingValue? _lastKnownRemoteTextEditingValue;
@@ -110,8 +110,8 @@ class RawEditorState extends EditorState
   FocusAttachment? _focusAttachment;
   late CursorCont _cursorCont;
   ScrollController? _scrollController;
-  late KeyboardVisibilityController _keyboardVisibilityController;
-  late StreamSubscription<bool> _keyboardVisibilitySubscription;
+  KeyboardVisibilityController? _keyboardVisibilityController;
+  StreamSubscription<bool>? _keyboardVisibilitySubscription;
   late KeyboardListener _keyboardListener;
   bool _didAutoFocus = false;
   bool _keyboardVisible = false;
@@ -144,7 +144,7 @@ class RawEditorState extends EditorState
     return result;
   }
 
-  handleCursorMovement(
+  void handleCursorMovement(
     LogicalKeyboardKey key,
     bool wordModifier,
     bool lineModifier,
@@ -370,7 +370,7 @@ class RawEditorState extends EditorState
   bool get hasConnection =>
       _textInputConnection != null && _textInputConnection!.attached;
 
-  openConnectionIfNeeded() {
+  void openConnectionIfNeeded() {
     if (!shouldCreateInputConnection) {
       return;
     }
@@ -382,8 +382,6 @@ class RawEditorState extends EditorState
         TextInputConfiguration(
           inputType: TextInputType.multiline,
           readOnly: widget.readOnly,
-          obscureText: false,
-          autocorrect: true,
           inputAction: TextInputAction.newline,
           keyboardAppearance: widget.keyboardAppearance,
           textCapitalization: widget.textCapitalization,
@@ -396,7 +394,7 @@ class RawEditorState extends EditorState
     _textInputConnection!.show();
   }
 
-  closeConnectionIfNeeded() {
+  void closeConnectionIfNeeded() {
     if (!hasConnection) {
       return;
     }
@@ -406,7 +404,7 @@ class RawEditorState extends EditorState
     _sentRemoteValues.clear();
   }
 
-  updateRemoteValueIfNeeded() {
+  void updateRemoteValueIfNeeded() {
     if (!hasConnection) {
       return;
     }
@@ -526,7 +524,6 @@ class RawEditorState extends EditorState
       child: Semantics(
         child: _Editor(
           key: _editorKey,
-          children: _buildChildren(_doc, context),
           document: _doc,
           selection: widget.controller.selection,
           hasFocus: _hasFocus,
@@ -535,6 +532,7 @@ class RawEditorState extends EditorState
           endHandleLayerLink: _endHandleLayerLink,
           onSelectionChanged: _handleSelectionChanged,
           padding: widget.padding,
+          children: _buildChildren(_doc, context),
         ),
       ),
     );
@@ -554,7 +552,7 @@ class RawEditorState extends EditorState
     }
 
     BoxConstraints constraints = widget.expands
-        ? BoxConstraints.expand()
+        ? const BoxConstraints.expand()
         : BoxConstraints(
             minHeight: widget.minHeight ?? 0.0,
             maxHeight: widget.maxHeight ?? double.infinity);
@@ -571,7 +569,7 @@ class RawEditorState extends EditorState
     );
   }
 
-  _handleSelectionChanged(
+  void _handleSelectionChanged(
       TextSelection selection, SelectionChangedCause cause) {
     widget.controller.updateSelection(selection, ChangeSource.LOCAL);
 
@@ -582,7 +580,7 @@ class RawEditorState extends EditorState
     }
   }
 
-  _buildChildren(Document doc, BuildContext context) {
+  List<Widget> _buildChildren(Document doc, BuildContext context) {
     final result = <Widget>[];
     Map<int, int> indentLevelCounts = {};
     for (Node node in doc.root.children) {
@@ -602,7 +600,7 @@ class RawEditorState extends EditorState
             widget.enableInteractiveSelection,
             _hasFocus,
             attrs.containsKey(Attribute.codeBlock.key)
-                ? EdgeInsets.all(16.0)
+                ? const EdgeInsets.all(16.0)
                 : null,
             widget.embedBuilder,
             _cursorCont,
@@ -652,7 +650,7 @@ class RawEditorState extends EditorState
         case 3:
           return defaultStyles!.h3!.verticalSpacing;
         default:
-          throw ('Invalid level $level');
+          throw 'Invalid level $level';
       }
     }
 
@@ -702,8 +700,9 @@ class RawEditorState extends EditorState
       _keyboardVisible = true;
     } else {
       _keyboardVisibilityController = KeyboardVisibilityController();
+      _keyboardVisible = _keyboardVisibilityController!.isVisible;
       _keyboardVisibilitySubscription =
-          _keyboardVisibilityController.onChange.listen((bool visible) {
+          _keyboardVisibilityController?.onChange.listen((bool visible) {
         _keyboardVisible = visible;
         if (visible) {
           _onChangeTextEditingValue();
@@ -717,7 +716,7 @@ class RawEditorState extends EditorState
   }
 
   @override
-  didChangeDependencies() {
+  void didChangeDependencies() {
     super.didChangeDependencies();
     DefaultStyles? parentStyles = QuillStyles.getStyles(context, true);
     DefaultStyles defaultStyles = DefaultStyles.getInstance(context);
@@ -782,7 +781,7 @@ class RawEditorState extends EditorState
         !widget.controller.selection.isCollapsed;
   }
 
-  handleDelete(bool forward) {
+  void handleDelete(bool forward) {
     TextSelection selection = widget.controller.selection;
     String plainText = textEditingValue.text;
     int cursorPosition = selection.start;
@@ -817,14 +816,15 @@ class RawEditorState extends EditorState
     String plainText = textEditingValue.text;
     if (shortcut == InputShortcut.COPY) {
       if (!selection.isCollapsed) {
-        Clipboard.setData(ClipboardData(text: selection.textInside(plainText)));
+        await Clipboard.setData(
+            ClipboardData(text: selection.textInside(plainText)));
       }
       return;
     }
     if (shortcut == InputShortcut.CUT && !widget.readOnly) {
       if (!selection.isCollapsed) {
         final data = selection.textInside(plainText);
-        Clipboard.setData(ClipboardData(text: data));
+        await Clipboard.setData(ClipboardData(text: data));
 
         widget.controller.replaceText(
           selection.start,
@@ -868,7 +868,7 @@ class RawEditorState extends EditorState
   @override
   void dispose() {
     closeConnectionIfNeeded();
-    _keyboardVisibilitySubscription.cancel();
+    _keyboardVisibilitySubscription?.cancel();
     assert(!hasConnection);
     _selectionOverlay?.dispose();
     _selectionOverlay = null;
@@ -881,11 +881,11 @@ class RawEditorState extends EditorState
     super.dispose();
   }
 
-  _updateSelectionOverlayForScroll() {
+  void _updateSelectionOverlayForScroll() {
     _selectionOverlay?.markNeedsBuild();
   }
 
-  _didChangeTextEditingValue() {
+  void _didChangeTextEditingValue() {
     if (kIsWeb) {
       _onChangeTextEditingValue();
       requestKeyboard();
@@ -899,7 +899,7 @@ class RawEditorState extends EditorState
     }
   }
 
-  _onChangeTextEditingValue() {
+  void _onChangeTextEditingValue() {
     _showCaretOnScreen();
     updateRemoteValueIfNeeded();
     _cursorCont.startOrStopCursorTimerIfNeeded(
@@ -918,7 +918,7 @@ class RawEditorState extends EditorState
     });
   }
 
-  _updateOrDisposeSelectionOverlayIfNeeded() {
+  void _updateOrDisposeSelectionOverlayIfNeeded() {
     if (_selectionOverlay != null) {
       if (_hasFocus) {
         _selectionOverlay!.update(textEditingValue);
@@ -950,7 +950,7 @@ class RawEditorState extends EditorState
     }
   }
 
-  _handleFocusChanged() {
+  void _handleFocusChanged() {
     openOrCloseConnection();
     _cursorCont.startOrStopCursorTimerIfNeeded(
         _hasFocus, widget.controller.selection);
@@ -964,7 +964,7 @@ class RawEditorState extends EditorState
     updateKeepAlive();
   }
 
-  _onChangedClipboardStatus() {
+  void _onChangedClipboardStatus() {
     if (!mounted) return;
     setState(() {
       // Inform the widget that the value of clipboardStatus has changed.
@@ -974,7 +974,7 @@ class RawEditorState extends EditorState
 
   bool _showCaretOnScreenScheduled = false;
 
-  _showCaretOnScreen() {
+  void _showCaretOnScreen() {
     if (!widget.showCursor || _showCaretOnScreenScheduled) {
       return;
     }
@@ -985,7 +985,7 @@ class RawEditorState extends EditorState
 
       final viewport = RenderAbstractViewport.of(getRenderEditor())!;
       final editorOffset = getRenderEditor()!
-          .localToGlobal(Offset(0.0, 0.0), ancestor: viewport);
+          .localToGlobal(const Offset(0.0, 0.0), ancestor: viewport);
       final offsetInViewport = _scrollController!.offset + editorOffset.dy;
 
       final offset = getRenderEditor()!.getOffsetToRevealCursor(
@@ -997,7 +997,7 @@ class RawEditorState extends EditorState
       if (offset != null) {
         _scrollController!.animateTo(
           offset,
-          duration: Duration(milliseconds: 100),
+          duration: const Duration(milliseconds: 100),
           curve: Curves.fastOutSlowIn,
         );
       }
@@ -1039,7 +1039,7 @@ class RawEditorState extends EditorState
   bool get selectAllEnabled => widget.toolbarOptions.selectAll;
 
   @override
-  requestKeyboard() {
+  void requestKeyboard() {
     if (_hasFocus) {
       openConnectionIfNeeded();
     } else {
@@ -1048,7 +1048,7 @@ class RawEditorState extends EditorState
   }
 
   @override
-  setTextEditingValue(TextEditingValue value) {
+  void setTextEditingValue(TextEditingValue value) {
     if (value.text == textEditingValue.text) {
       widget.controller.updateSelection(value.selection, ChangeSource.LOCAL);
     } else {
@@ -1094,29 +1094,25 @@ class RawEditorState extends EditorState
 
   @override
   bool showToolbar() {
-    if (_selectionOverlay == null || _selectionOverlay!.toolbar != null) {
-      // Web is using native dom elements to enable clipboard functionality of the
-      // toolbar: copy, paste, select, cut. It might also provide additional
-      // functionality depending on the browser (such as translate). Due to this
-      // we should not show a Flutter toolbar for the editable text elements.
-      if (kIsWeb) {
-        return false;
-      }
-
-      if (_selectionOverlay == null || _selectionOverlay!.toolbar != null) {
-        return false;
-      }
-
-      _selectionOverlay!.showToolbar();
-      return true;
+    // Web is using native dom elements to enable clipboard functionality of the
+    // toolbar: copy, paste, select, cut. It might also provide additional
+    // functionality depending on the browser (such as translate). Due to this
+    // we should not show a Flutter toolbar for the editable text elements.
+    if (kIsWeb) {
+      return false;
     }
+    if (_selectionOverlay == null || _selectionOverlay!.toolbar != null) {
+      return false;
+    }
+
+    _selectionOverlay!.showToolbar();
     return true;
   }
 
   @override
   bool get wantKeepAlive => widget.focusNode.hasFocus;
 
-  openOrCloseConnection() {
+  void openOrCloseConnection() {
     if (widget.focusNode.hasFocus && widget.focusNode.consumeKeyboardToken()) {
       openConnectionIfNeeded();
     } else if (!widget.focusNode.hasFocus) {
@@ -1151,20 +1147,21 @@ class _Editor extends MultiChildRenderObjectWidget {
   @override
   RenderEditor createRenderObject(BuildContext context) {
     return RenderEditor(
-        null,
-        textDirection,
-        padding,
-        document,
-        selection,
-        hasFocus,
-        onSelectionChanged,
-        startHandleLayerLink,
-        endHandleLayerLink,
-        EdgeInsets.fromLTRB(4, 4, 4, 5));
+      null,
+      textDirection,
+      padding,
+      document,
+      selection,
+      hasFocus,
+      onSelectionChanged,
+      startHandleLayerLink,
+      endHandleLayerLink,
+      const EdgeInsets.fromLTRB(4, 4, 4, 5),
+    );
   }
 
   @override
-  updateRenderObject(
+  void updateRenderObject(
       BuildContext context, covariant RenderEditor renderObject) {
     renderObject.document = document;
     renderObject.setContainer(document.root);

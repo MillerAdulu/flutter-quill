@@ -58,14 +58,14 @@ class EditorTextSelectionOverlay {
     OverlayState overlay = Overlay.of(context, rootOverlay: true)!;
 
     _toolbarController = AnimationController(
-        duration: Duration(milliseconds: 150), vsync: overlay);
+        duration: const Duration(milliseconds: 150), vsync: overlay);
   }
 
   TextSelection get _selection => value.selection;
 
   Animation<double> get _toolbarOpacity => _toolbarController.view;
 
-  setHandlesVisible(bool visible) {
+  void setHandlesVisible(bool visible) {
     if (handlesVisible == visible) {
       return;
     }
@@ -78,7 +78,7 @@ class EditorTextSelectionOverlay {
     }
   }
 
-  hideHandles() {
+  void hideHandles() {
     if (_handles == null) {
       return;
     }
@@ -87,14 +87,14 @@ class EditorTextSelectionOverlay {
     _handles = null;
   }
 
-  hideToolbar() {
+  void hideToolbar() {
     assert(toolbar != null);
     _toolbarController.stop();
     toolbar!.remove();
     toolbar = null;
   }
 
-  showToolbar() {
+  void showToolbar() {
     assert(toolbar == null);
     toolbar = OverlayEntry(builder: _buildToolbar);
     Overlay.of(context, rootOverlay: true, debugRequiredFor: debugRequiredFor)!
@@ -104,8 +104,8 @@ class EditorTextSelectionOverlay {
 
   Widget _buildHandle(
       BuildContext context, _TextSelectionHandlePosition position) {
-    if ((_selection.isCollapsed &&
-        position == _TextSelectionHandlePosition.END)) {
+    if (_selection.isCollapsed &&
+        position == _TextSelectionHandlePosition.END) {
       return Container();
     }
     return Visibility(
@@ -125,7 +125,7 @@ class EditorTextSelectionOverlay {
         ));
   }
 
-  update(TextEditingValue newValue) {
+  void update(TextEditingValue newValue) {
     if (value == newValue) {
       return;
     }
@@ -138,21 +138,22 @@ class EditorTextSelectionOverlay {
     }
   }
 
-  _handleSelectionHandleChanged(
+  void _handleSelectionHandleChanged(
       TextSelection? newSelection, _TextSelectionHandlePosition position) {
     TextPosition textPosition;
     switch (position) {
       case _TextSelectionHandlePosition.START:
-        textPosition =
-            newSelection != null ? newSelection.base : TextPosition(offset: 0);
+        textPosition = newSelection != null
+            ? newSelection.base
+            : const TextPosition(offset: 0);
         break;
       case _TextSelectionHandlePosition.END:
         textPosition = newSelection != null
             ? newSelection.extent
-            : TextPosition(offset: 0);
+            : const TextPosition(offset: 0);
         break;
       default:
-        throw ('Invalid position');
+        throw 'Invalid position';
     }
     selectionDelegate.textEditingValue =
         value.copyWith(selection: newSelection, composing: TextRange.empty);
@@ -198,12 +199,12 @@ class EditorTextSelectionOverlay {
             endpoints,
             selectionDelegate,
             clipboardStatus,
-            Offset(0, 0)),
+            const Offset(0, 0)),
       ),
     );
   }
 
-  markNeedsBuild([Duration? duration]) {
+  void markNeedsBuild([Duration? duration]) {
     if (_handles != null) {
       _handles![0].markNeedsBuild();
       _handles![1].markNeedsBuild();
@@ -211,7 +212,7 @@ class EditorTextSelectionOverlay {
     toolbar?.markNeedsBuild();
   }
 
-  hide() {
+  void hide() {
     if (_handles != null) {
       _handles![0].remove();
       _handles![1].remove();
@@ -222,7 +223,7 @@ class EditorTextSelectionOverlay {
     }
   }
 
-  dispose() {
+  void dispose() {
     hide();
     _toolbarController.dispose();
   }
@@ -245,7 +246,6 @@ class EditorTextSelectionOverlay {
 
 class _TextSelectionHandleOverlay extends StatefulWidget {
   const _TextSelectionHandleOverlay({
-    Key? key,
     required this.selection,
     required this.position,
     required this.startHandleLayerLink,
@@ -255,6 +255,7 @@ class _TextSelectionHandleOverlay extends StatefulWidget {
     required this.onSelectionHandleTapped,
     required this.selectionControls,
     this.dragStartBehavior = DragStartBehavior.start,
+    Key? key,
   }) : super(key: key);
 
   final TextSelection selection;
@@ -292,14 +293,14 @@ class _TextSelectionHandleOverlayState
   void initState() {
     super.initState();
 
-    _controller =
-        AnimationController(duration: Duration(milliseconds: 150), vsync: this);
+    _controller = AnimationController(
+        duration: const Duration(milliseconds: 150), vsync: this);
 
     _handleVisibilityChanged();
     widget._visibility!.addListener(_handleVisibilityChanged);
   }
 
-  _handleVisibilityChanged() {
+  void _handleVisibilityChanged() {
     if (widget._visibility!.value) {
       _controller.forward();
     } else {
@@ -308,7 +309,7 @@ class _TextSelectionHandleOverlayState
   }
 
   @override
-  didUpdateWidget(_TextSelectionHandleOverlay oldWidget) {
+  void didUpdateWidget(_TextSelectionHandleOverlay oldWidget) {
     super.didUpdateWidget(oldWidget);
     oldWidget._visibility!.removeListener(_handleVisibilityChanged);
     _handleVisibilityChanged();
@@ -322,9 +323,9 @@ class _TextSelectionHandleOverlayState
     super.dispose();
   }
 
-  _handleDragStart(DragStartDetails details) {}
+  void _handleDragStart(DragStartDetails details) {}
 
-  _handleDragUpdate(DragUpdateDetails details) {
+  void _handleDragUpdate(DragUpdateDetails details) {
     TextPosition position =
         widget.renderObject!.getPositionForOffset(details.globalPosition);
     if (widget.selection.isCollapsed) {
@@ -357,9 +358,10 @@ class _TextSelectionHandleOverlayState
     widget.onSelectionHandleChanged(newSelection);
   }
 
-  _handleTap() {
-    if (widget.onSelectionHandleTapped != null)
+  void _handleTap() {
+    if (widget.onSelectionHandleTapped != null) {
       widget.onSelectionHandleTapped!();
+    }
   }
 
   @override
@@ -467,7 +469,7 @@ class _TextSelectionHandleOverlayState
 
 class EditorTextSelectionGestureDetector extends StatefulWidget {
   const EditorTextSelectionGestureDetector({
-    Key? key,
+    required this.child,
     this.onTapDown,
     this.onForcePressStart,
     this.onForcePressEnd,
@@ -481,7 +483,7 @@ class EditorTextSelectionGestureDetector extends StatefulWidget {
     this.onDragSelectionUpdate,
     this.onDragSelectionEnd,
     this.behavior,
-    required this.child,
+    Key? key,
   }) : super(key: key);
 
   final GestureTapDownCallback? onTapDown;
@@ -530,7 +532,7 @@ class _EditorTextSelectionGestureDetectorState
     super.dispose();
   }
 
-  _handleTapDown(TapDownDetails details) {
+  void _handleTapDown(TapDownDetails details) {
     if (widget.onTapDown != null) {
       widget.onTapDown!(details);
     }
@@ -546,7 +548,7 @@ class _EditorTextSelectionGestureDetectorState
     }
   }
 
-  _handleTapUp(TapUpDetails details) {
+  void _handleTapUp(TapUpDetails details) {
     if (!_isDoubleTap) {
       if (widget.onSingleTapUp != null) {
         widget.onSingleTapUp!(details);
@@ -557,7 +559,7 @@ class _EditorTextSelectionGestureDetectorState
     _isDoubleTap = false;
   }
 
-  _handleTapCancel() {
+  void _handleTapCancel() {
     if (widget.onSingleTapCancel != null) {
       widget.onSingleTapCancel!();
     }
@@ -567,7 +569,7 @@ class _EditorTextSelectionGestureDetectorState
   DragUpdateDetails? _lastDragUpdateDetails;
   Timer? _dragUpdateThrottleTimer;
 
-  _handleDragStart(DragStartDetails details) {
+  void _handleDragStart(DragStartDetails details) {
     assert(_lastDragStartDetails == null);
     _lastDragStartDetails = details;
     if (widget.onDragSelectionStart != null) {
@@ -575,13 +577,13 @@ class _EditorTextSelectionGestureDetectorState
     }
   }
 
-  _handleDragUpdate(DragUpdateDetails details) {
+  void _handleDragUpdate(DragUpdateDetails details) {
     _lastDragUpdateDetails = details;
     _dragUpdateThrottleTimer ??=
-        Timer(Duration(milliseconds: 50), _handleDragUpdateThrottled);
+        Timer(const Duration(milliseconds: 50), _handleDragUpdateThrottled);
   }
 
-  _handleDragUpdateThrottled() {
+  void _handleDragUpdateThrottled() {
     assert(_lastDragStartDetails != null);
     assert(_lastDragUpdateDetails != null);
     if (widget.onDragSelectionUpdate != null) {
@@ -592,7 +594,7 @@ class _EditorTextSelectionGestureDetectorState
     _lastDragUpdateDetails = null;
   }
 
-  _handleDragEnd(DragEndDetails details) {
+  void _handleDragEnd(DragEndDetails details) {
     assert(_lastDragStartDetails != null);
     if (_dragUpdateThrottleTimer != null) {
       _dragUpdateThrottleTimer!.cancel();
@@ -606,7 +608,7 @@ class _EditorTextSelectionGestureDetectorState
     _lastDragUpdateDetails = null;
   }
 
-  _forcePressStarted(ForcePressDetails details) {
+  void _forcePressStarted(ForcePressDetails details) {
     _doubleTapTimer?.cancel();
     _doubleTapTimer = null;
     if (widget.onForcePressStart != null) {
@@ -614,25 +616,25 @@ class _EditorTextSelectionGestureDetectorState
     }
   }
 
-  _forcePressEnded(ForcePressDetails details) {
+  void _forcePressEnded(ForcePressDetails details) {
     if (widget.onForcePressEnd != null) {
       widget.onForcePressEnd!(details);
     }
   }
 
-  _handleLongPressStart(LongPressStartDetails details) {
+  void _handleLongPressStart(LongPressStartDetails details) {
     if (!_isDoubleTap && widget.onSingleLongTapStart != null) {
       widget.onSingleLongTapStart!(details);
     }
   }
 
-  _handleLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
+  void _handleLongPressMoveUpdate(LongPressMoveUpdateDetails details) {
     if (!_isDoubleTap && widget.onSingleLongTapMoveUpdate != null) {
       widget.onSingleLongTapMoveUpdate!(details);
     }
   }
 
-  _handleLongPressEnd(LongPressEndDetails details) {
+  void _handleLongPressEnd(LongPressEndDetails details) {
     if (!_isDoubleTap && widget.onSingleLongTapEnd != null) {
       widget.onSingleLongTapEnd!(details);
     }
@@ -720,20 +722,5 @@ class _EditorTextSelectionGestureDetectorState
       behavior: widget.behavior,
       child: widget.child,
     );
-  }
-}
-
-class _TransparentTapGestureRecognizer extends TapGestureRecognizer {
-  _TransparentTapGestureRecognizer({
-    Object? debugOwner,
-  }) : super(debugOwner: debugOwner);
-
-  @override
-  void rejectGesture(int pointer) {
-    if (state == GestureRecognizerState.ready) {
-      acceptGesture(pointer);
-    } else {
-      super.rejectGesture(pointer);
-    }
   }
 }

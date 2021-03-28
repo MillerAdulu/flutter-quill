@@ -79,12 +79,11 @@ class _HomePageState extends State<HomePage> {
                 .getSelectionStyle()
                 .attributes
                 .keys
-                .contains("bold")) {
+                .contains('bold')) {
               _controller!
                   .formatSelection(Attribute.clone(Attribute.bold, null));
             } else {
               _controller!.formatSelection(Attribute.bold);
-              print("not bold");
             }
           }
         },
@@ -111,7 +110,6 @@ class _HomePageState extends State<HomePage> {
                 autoFocus: false,
                 readOnly: false,
                 placeholder: 'Add content',
-                enableInteractiveSelection: true,
                 expands: false,
                 padding: EdgeInsets.zero,
                 customStyles: DefaultStyles(

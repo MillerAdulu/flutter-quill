@@ -11,7 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_quill/models/documents/attribute.dart';
 import 'package:flutter_quill/models/documents/document.dart';
 import 'package:flutter_quill/models/documents/nodes/container.dart'
-    as containerNode;
+    as container_node;
 import 'package:flutter_quill/models/documents/nodes/embed.dart';
 import 'package:flutter_quill/models/documents/nodes/leaf.dart' as leaf;
 import 'package:flutter_quill/models/documents/nodes/line.dart';
@@ -93,13 +93,22 @@ abstract class RenderAbstractEditor {
   void selectPosition(SelectionChangedCause cause);
 }
 
+String _standardizeImageUrl(String url) {
+  if (url.contains('base64')) {
+    return url.split(',')[1];
+  }
+  return url;
+}
+
 Widget _defaultEmbedBuilder(BuildContext context, leaf.Embed node) {
   switch (node.value.type) {
     case 'image':
-      String imageUrl = node.value.data;
+      String imageUrl = _standardizeImageUrl(node.value.data);
       return imageUrl.startsWith('http')
           ? Image.network(imageUrl)
-          : Image.file(io.File(imageUrl));
+          : isBase64(imageUrl)
+              ? Image.memory(base64.decode(imageUrl))
+              : Image.file(io.File(imageUrl));
     default:
       throw UnimplementedError(
           'Embeddable type "${node.value.type}" is not supported by default embed '
@@ -160,21 +169,21 @@ class QuillEditor extends StatefulWidget {
   final ValueChanged<String>? onLaunchUrl;
   final EmbedBuilder embedBuilder;
 
-  QuillEditor(
+  const QuillEditor(
       {required this.controller,
       required this.focusNode,
       required this.scrollController,
       required this.scrollable,
       required this.padding,
       required this.autoFocus,
-      this.showCursor,
       required this.readOnly,
+      required this.expands,
+      this.showCursor,
       this.placeholder,
       this.enableInteractiveSelection = true,
       this.minHeight,
       this.maxHeight,
       this.customStyles,
-      required this.expands,
       this.textCapitalization = TextCapitalization.sentences,
       this.keyboardAppearance = Brightness.light,
       this.scrollPhysics,
@@ -191,7 +200,6 @@ class QuillEditor extends StatefulWidget {
         focusNode: FocusNode(),
         autoFocus: true,
         readOnly: readOnly,
-        enableInteractiveSelection: true,
         expands: false,
         padding: EdgeInsets.zero);
   }
@@ -202,7 +210,7 @@ class QuillEditor extends StatefulWidget {
 
 class _QuillEditorState extends State<QuillEditor>
     implements EditorTextSelectionGestureDetectorBuilderDelegate {
-  GlobalKey<EditorState> _editorKey = GlobalKey<EditorState>();
+  final GlobalKey<EditorState> _editorKey = GlobalKey<EditorState>();
   late EditorTextSelectionGestureDetectorBuilder
       _selectionGestureDetectorBuilder;
 
@@ -316,7 +324,7 @@ class _QuillEditorState extends State<QuillEditor>
     return widget.enableInteractiveSelection;
   }
 
-  _requestKeyboard() {
+  void _requestKeyboard() {
     _editorKey.currentState!.requestKeyboard();
   }
 }
@@ -328,7 +336,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
   _QuillEditorSelectionGestureDetectorBuilder(this._state) : super(_state);
 
   @override
-  onForcePressStart(ForcePressDetails details) {
+  void onForcePressStart(ForcePressDetails details) {
     super.onForcePressStart(details);
     if (delegate.getSelectionEnabled() && shouldShowSelectionToolbar) {
       getEditor()!.showToolbar();
@@ -336,7 +344,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
   }
 
   @override
-  onForcePressEnd(ForcePressDetails details) {}
+  void onForcePressEnd(ForcePressDetails details) {}
 
   @override
   void onSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
@@ -363,7 +371,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
         );
         break;
       default:
-        throw ('Invalid platform');
+        throw 'Invalid platform';
     }
   }
 
@@ -373,13 +381,13 @@ class _QuillEditorSelectionGestureDetectorBuilder
     }
     TextPosition pos =
         getRenderEditor()!.getPositionForOffset(details.globalPosition);
-    containerNode.ChildQuery result =
+    container_node.ChildQuery result =
         getEditor()!.widget.controller.document.queryChild(pos.offset);
     if (result.node == null) {
       return false;
     }
     Line line = result.node as Line;
-    containerNode.ChildQuery segmentResult =
+    container_node.ChildQuery segmentResult =
         line.queryChild(result.offset, false);
     if (segmentResult.node == null) {
       if (line.length == 1) {
@@ -394,9 +402,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
     leaf.Leaf segment = segmentResult.node as leaf.Leaf;
     if (segment.style.containsKey(Attribute.link.key)) {
       var launchUrl = getEditor()!.widget.onLaunchUrl;
-      if (launchUrl == null) {
-        launchUrl = _launchUrl;
-      }
+      launchUrl ??= _launchUrl;
       String? link = segment.style.attributes[Attribute.link.key]!.value;
       if (getEditor()!.widget.readOnly && link != null) {
         link = link.trim();
@@ -411,7 +417,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
     if (getEditor()!.widget.readOnly && segment.value is BlockEmbed) {
       BlockEmbed blockEmbed = segment.value as BlockEmbed;
       if (blockEmbed.type == 'image') {
-        final String imageUrl = blockEmbed.data;
+        final String imageUrl = _standardizeImageUrl(blockEmbed.data);
         Navigator.push(
           getEditor()!.context,
           MaterialPageRoute(
@@ -435,7 +441,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
   }
 
   bool _flipListCheckbox(
-      TextPosition pos, Line line, containerNode.ChildQuery segmentResult) {
+      TextPosition pos, Line line, container_node.ChildQuery segmentResult) {
     if (getEditor()!.widget.readOnly ||
         !line.style.containsKey(Attribute.list.key) ||
         segmentResult.offset != 0) {
@@ -464,7 +470,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
   }
 
   @override
-  onSingleTapUp(TapUpDetails details) {
+  void onSingleTapUp(TapUpDetails details) {
     getEditor()!.hideToolbar();
 
     bool positionSelected = _onTapping(details);
@@ -516,7 +522,7 @@ class _QuillEditorSelectionGestureDetectorBuilder
           Feedback.forLongPress(_state.context);
           break;
         default:
-          throw ('Invalid platform');
+          throw 'Invalid platform';
       }
     }
   }
@@ -560,7 +566,7 @@ class RenderEditor extends RenderEditableContainerBox
           padding,
         );
 
-  setDocument(Document doc) {
+  void setDocument(Document doc) {
     if (document == doc) {
       return;
     }
@@ -568,7 +574,7 @@ class RenderEditor extends RenderEditableContainerBox
     markNeedsLayout();
   }
 
-  setHasFocus(bool h) {
+  void setHasFocus(bool h) {
     if (_hasFocus == h) {
       return;
     }
@@ -576,7 +582,7 @@ class RenderEditor extends RenderEditableContainerBox
     markNeedsSemanticsUpdate();
   }
 
-  setSelection(TextSelection t) {
+  void setSelection(TextSelection t) {
     if (selection == t) {
       return;
     }
@@ -584,7 +590,7 @@ class RenderEditor extends RenderEditableContainerBox
     markNeedsPaint();
   }
 
-  setStartHandleLayerLink(LayerLink value) {
+  void setStartHandleLayerLink(LayerLink value) {
     if (_startHandleLayerLink == value) {
       return;
     }
@@ -592,7 +598,7 @@ class RenderEditor extends RenderEditableContainerBox
     markNeedsPaint();
   }
 
-  setEndHandleLayerLink(LayerLink value) {
+  void setEndHandleLayerLink(LayerLink value) {
     if (_endHandleLayerLink == value) {
       return;
     }
@@ -662,12 +668,12 @@ class RenderEditor extends RenderEditableContainerBox
   Offset? _lastTapDownPosition;
 
   @override
-  handleTapDown(TapDownDetails details) {
+  void handleTapDown(TapDownDetails details) {
     _lastTapDownPosition = details.globalPosition;
   }
 
   @override
-  selectWordsInRange(
+  void selectWordsInRange(
     Offset from,
     Offset? to,
     SelectionChangedCause cause,
@@ -687,7 +693,7 @@ class RenderEditor extends RenderEditableContainerBox
     );
   }
 
-  _handleSelectionChange(
+  void _handleSelectionChange(
     TextSelection nextSelection,
     SelectionChangedCause cause,
   ) {
@@ -703,7 +709,7 @@ class RenderEditor extends RenderEditableContainerBox
   }
 
   @override
-  selectWordEdge(SelectionChangedCause cause) {
+  void selectWordEdge(SelectionChangedCause cause) {
     assert(_lastTapDownPosition != null);
     TextPosition position = getPositionForOffset(_lastTapDownPosition!);
     RenderEditableBox child = childAtPosition(position);
@@ -719,8 +725,7 @@ class RenderEditor extends RenderEditableContainerBox
     );
     if (position.offset - word.start <= 1) {
       _handleSelectionChange(
-        TextSelection.collapsed(
-            offset: word.start, affinity: TextAffinity.downstream),
+        TextSelection.collapsed(offset: word.start),
         cause,
       );
     } else {
@@ -733,7 +738,7 @@ class RenderEditor extends RenderEditableContainerBox
   }
 
   @override
-  selectPositionAt(
+  void selectPositionAt(
     Offset from,
     Offset? to,
     SelectionChangedCause cause,
@@ -757,12 +762,12 @@ class RenderEditor extends RenderEditableContainerBox
   }
 
   @override
-  selectWord(SelectionChangedCause cause) {
+  void selectWord(SelectionChangedCause cause) {
     selectWordsInRange(_lastTapDownPosition!, null, cause);
   }
 
   @override
-  selectPosition(SelectionChangedCause cause) {
+  void selectPosition(SelectionChangedCause cause) {
     selectPositionAt(_lastTapDownPosition!, null, cause);
   }
 
@@ -812,7 +817,7 @@ class RenderEditor extends RenderEditableContainerBox
     return defaultHitTestChildren(result, position: position);
   }
 
-  _paintHandleLayers(
+  void _paintHandleLayers(
       PaintingContext context, List<TextSelectionPoint> endpoints) {
     var startPoint = endpoints[0].point;
     startPoint = Offset(
@@ -859,6 +864,11 @@ class RenderEditor extends RenderEditableContainerBox
     );
   }
 
+  /// Returns the y-offset of the editor at which [selection] is visible.
+  ///
+  /// The offset is the distance from the top of the editor and is the minimum
+  /// from the current scroll position until [selection] becomes visible.
+  /// Returns null if [selection] is already visible.
   double? getOffsetToRevealCursor(
       double viewportHeight, double scrollOffset, double offsetInViewport) {
     List<TextSelectionPoint> endpoints = getEndpointsForSelection(selection);
@@ -895,7 +905,7 @@ class RenderEditableContainerBox extends RenderBox
             EditableContainerParentData>,
         RenderBoxContainerDefaultsMixin<RenderEditableBox,
             EditableContainerParentData> {
-  containerNode.Container _container;
+  container_node.Container _container;
   TextDirection textDirection;
   EdgeInsetsGeometry _padding;
   EdgeInsets? _resolvedPadding;
@@ -906,11 +916,11 @@ class RenderEditableContainerBox extends RenderBox
     addAll(children);
   }
 
-  containerNode.Container getContainer() {
+  container_node.Container getContainer() {
     return _container;
   }
 
-  setContainer(containerNode.Container c) {
+  void setContainer(container_node.Container c) {
     if (_container == c) {
       return;
     }
@@ -920,7 +930,7 @@ class RenderEditableContainerBox extends RenderBox
 
   EdgeInsetsGeometry getPadding() => _padding;
 
-  setPadding(EdgeInsetsGeometry value) {
+  void setPadding(EdgeInsetsGeometry value) {
     assert(value.isNonNegative);
     if (_padding == value) {
       return;
@@ -931,7 +941,7 @@ class RenderEditableContainerBox extends RenderBox
 
   EdgeInsets? get resolvedPadding => _resolvedPadding;
 
-  _resolvePadding() {
+  void _resolvePadding() {
     if (_resolvedPadding != null) {
       return;
     }
@@ -954,12 +964,12 @@ class RenderEditableContainerBox extends RenderBox
       targetChild = childAfter(targetChild);
     }
     if (targetChild == null) {
-      throw ('targetChild should not be null');
+      throw 'targetChild should not be null';
     }
     return targetChild;
   }
 
-  _markNeedsPaddingResolution() {
+  void _markNeedsPaddingResolution() {
     _resolvedPadding = null;
     markNeedsLayout();
   }
@@ -984,11 +994,11 @@ class RenderEditableContainerBox extends RenderBox
       dy += child.size.height;
       child = childAfter(child);
     }
-    throw ('No child');
+    throw 'No child';
   }
 
   @override
-  setupParentData(RenderBox child) {
+  void setupParentData(RenderBox child) {
     if (child.parentData is EditableContainerParentData) {
       return;
     }

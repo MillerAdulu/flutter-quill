@@ -1,6 +1,6 @@
 name: flutter_quill
-description: One client and affiliated collaborator of Flutter Quill is Bullet Journal App.
-version: 1.0.9
+description: A rich text editor supporting mobile and web (Demo App @ bulletjournal.us)
+version: 1.1.4
 #author: bulletjournal
 homepage: https://bulletjournal.us/home/index.html
 repository: https://github.com/singerdmx/flutter-quill
@@ -15,7 +15,7 @@ dependencies:
   collection: ^1.15.0
   file_picker: ^3.0.0
   filesystem_picker: ^2.0.0-nullsafety.0
-  flutter_colorpicker: ^0.4.0-nullsafety.0
+  flutter_colorpicker: ^0.4.0
   flutter_keyboard_visibility: ^5.0.0
   image_picker: ^0.7.3
   path_provider: ^2.0.1
@@ -25,6 +25,7 @@ dependencies:
   tuple: ^2.0.0
   universal_html: ^2.0.4
   url_launcher: ^6.0.2
+  pedantic: ^1.11.0
 
 dev_dependencies:
   flutter_test:
