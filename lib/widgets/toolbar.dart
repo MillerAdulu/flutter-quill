@@ -926,144 +926,136 @@ class QuillToolbar extends StatefulWidget implements PreferredSizeWidget {
   }) {
     iconSize = toolbarIconSize;
     return QuillToolbar(key: key, children: [
-      Visibility(
-        visible: showHistory,
-        child: HistoryButton(
-          icon: Icons.undo_outlined,
-          controller: controller,
-          undo: true,
-        ),
-      ),
-      Visibility(
-        visible: showHistory,
-        child: HistoryButton(
-          icon: Icons.redo_outlined,
-          controller: controller,
-          undo: false,
-        ),
-      ),
+      !showHistory
+          ? const SizedBox.shrink()
+          : HistoryButton(
+              icon: Icons.undo_outlined,
+              controller: controller,
+              undo: true,
+            ),
+      !showHistory
+          ? const SizedBox.shrink()
+          : HistoryButton(
+              icon: Icons.redo_outlined,
+              controller: controller,
+              undo: false,
+            ),
       const SizedBox(width: 0.6),
-      Visibility(
-        visible: showBoldButton,
-        child: ToggleStyleButton(
-          attribute: Attribute.bold,
-          icon: Icons.format_bold,
-          controller: controller,
-        ),
-      ),
+      !showBoldButton
+          ? const SizedBox.shrink()
+          : ToggleStyleButton(
+              attribute: Attribute.bold,
+              icon: Icons.format_bold,
+              controller: controller,
+            ),
       const SizedBox(width: 0.6),
-      Visibility(
-        visible: showItalicButton,
-        child: ToggleStyleButton(
-          attribute: Attribute.italic,
-          icon: Icons.format_italic,
-          controller: controller,
-        ),
-      ),
+      !showItalicButton
+          ? const SizedBox.shrink()
+          : ToggleStyleButton(
+              attribute: Attribute.italic,
+              icon: Icons.format_italic,
+              controller: controller,
+            ),
       const SizedBox(width: 0.6),
-      Visibility(
-        visible: showUnderLineButton,
-        child: ToggleStyleButton(
-          attribute: Attribute.underline,
-          icon: Icons.format_underline,
-          controller: controller,
-        ),
-      ),
+      !showUnderLineButton
+          ? const SizedBox.shrink()
+          : ToggleStyleButton(
+              attribute: Attribute.underline,
+              icon: Icons.format_underline,
+              controller: controller,
+            ),
       const SizedBox(width: 0.6),
-      Visibility(
-        visible: showStrikeThrough,
-        child: ToggleStyleButton(
-          attribute: Attribute.strikeThrough,
-          icon: Icons.format_strikethrough,
-          controller: controller,
-        ),
-      ),
+      !showStrikeThrough
+          ? const SizedBox.shrink()
+          : ToggleStyleButton(
+              attribute: Attribute.strikeThrough,
+              icon: Icons.format_strikethrough,
+              controller: controller,
+            ),
       const SizedBox(width: 0.6),
-      Visibility(
-        visible: showColorButton,
-        child: ColorButton(
-          icon: Icons.color_lens,
-          controller: controller,
-          background: false,
-        ),
-      ),
+      !showColorButton
+          ? const SizedBox.shrink()
+          : ColorButton(
+              icon: Icons.color_lens,
+              controller: controller,
+              background: false,
+            ),
       const SizedBox(width: 0.6),
-      Visibility(
-        visible: showBackgroundColorButton,
-        child: ColorButton(
-          icon: Icons.format_color_fill,
-          controller: controller,
-          background: true,
-        ),
-      ),
+      !showBackgroundColorButton
+          ? const SizedBox.shrink()
+          : ColorButton(
+              icon: Icons.format_color_fill,
+              controller: controller,
+              background: true,
+            ),
       const SizedBox(width: 0.6),
-      Visibility(
-        visible: showClearFormat,
-        child: ClearFormatButton(
-          icon: Icons.format_clear,
-          controller: controller,
-        ),
-      ),
+      !showClearFormat
+          ? const SizedBox.shrink()
+          : ClearFormatButton(
+              icon: Icons.format_clear,
+              controller: controller,
+            ),
       const SizedBox(width: 0.6),
-      Visibility(
-        visible: onImagePickCallback != null,
-        child: ImageButton(
-          icon: Icons.image,
-          controller: controller,
-          imageSource: ImageSource.gallery,
-          onImagePickCallback: onImagePickCallback,
-        ),
-      ),
+      onImagePickCallback == null
+          ? const SizedBox.shrink()
+          : ImageButton(
+              icon: Icons.image,
+              controller: controller,
+              imageSource: ImageSource.gallery,
+              onImagePickCallback: onImagePickCallback,
+            ),
       const SizedBox(width: 0.6),
-      Visibility(
-        visible: onImagePickCallback != null,
-        child: ImageButton(
-          icon: Icons.photo_camera,
-          controller: controller,
-          imageSource: ImageSource.camera,
-          onImagePickCallback: onImagePickCallback,
-        ),
+      onImagePickCallback == null
+          ? const SizedBox.shrink()
+          : ImageButton(
+              icon: Icons.photo_camera,
+              controller: controller,
+              imageSource: ImageSource.camera,
+              onImagePickCallback: onImagePickCallback,
+            ),
+      !showHeaderStyle
+          ? const SizedBox.shrink()
+          : VerticalDivider(
+              indent: 16,
+              endIndent: 16,
+              color: Colors.grey.shade400,
+            ),
+      !showHeaderStyle
+          ? const SizedBox.shrink()
+          : SelectHeaderStyleButton(controller: controller),
+      VerticalDivider(
+        indent: 16,
+        endIndent: 16,
+        color: Colors.grey.shade400,
       ),
-      Visibility(
-          visible: showHeaderStyle,
-          child: VerticalDivider(
-              indent: 16, endIndent: 16, color: Colors.grey.shade400)),
-      Visibility(
-          visible: showHeaderStyle,
-          child: SelectHeaderStyleButton(controller: controller)),
-      VerticalDivider(indent: 16, endIndent: 16, color: Colors.grey.shade400),
-      Visibility(
-        visible: showListNumbers,
-        child: ToggleStyleButton(
-          attribute: Attribute.ol,
-          controller: controller,
-          icon: Icons.format_list_numbered,
-        ),
-      ),
-      Visibility(
-        visible: showListBullets,
-        child: ToggleStyleButton(
-          attribute: Attribute.ul,
-          controller: controller,
-          icon: Icons.format_list_bulleted,
-        ),
-      ),
-      Visibility(
-        visible: showListCheck,
-        child: ToggleCheckListButton(
-          attribute: Attribute.unchecked,
-          controller: controller,
-          icon: Icons.check_box,
-        ),
-      ),
-      Visibility(
-        visible: showCodeBlock,
-        child: ToggleStyleButton(
-          attribute: Attribute.codeBlock,
-          controller: controller,
-          icon: Icons.code,
-        ),
-      ),
+      !showListNumbers
+          ? const SizedBox.shrink()
+          : ToggleStyleButton(
+              attribute: Attribute.ol,
+              controller: controller,
+              icon: Icons.format_list_numbered,
+            ),
+      !showListBullets
+          ? const SizedBox.shrink()
+          : ToggleStyleButton(
+              attribute: Attribute.ul,
+              controller: controller,
+              icon: Icons.format_list_bulleted,
+            ),
+      !showListCheck
+          ? const SizedBox.shrink()
+          : ToggleCheckListButton(
+              attribute: Attribute.unchecked,
+              controller: controller,
+              icon: Icons.check_box,
+            ),
+      !showCodeBlock
+          ? const SizedBox.shrink()
+          : ToggleStyleButton(
+              attribute: Attribute.codeBlock,
+              controller: controller,
+              icon: Icons.code,
+            ),
       Visibility(
           visible: !showListNumbers &&
               !showListBullets &&
@@ -1071,43 +1063,41 @@ class QuillToolbar extends StatefulWidget implements PreferredSizeWidget {
               !showCodeBlock,
           child: VerticalDivider(
               indent: 16, endIndent: 16, color: Colors.grey.shade400)),
-      Visibility(
-        visible: showQuote,
-        child: ToggleStyleButton(
-          attribute: Attribute.blockQuote,
-          controller: controller,
-          icon: Icons.format_quote,
-        ),
-      ),
-      Visibility(
-        visible: showIndent,
-        child: IndentButton(
-          icon: Icons.format_indent_increase,
-          controller: controller,
-          isIncrease: true,
-        ),
-      ),
-      Visibility(
-        visible: showIndent,
-        child: IndentButton(
-          icon: Icons.format_indent_decrease,
-          controller: controller,
-          isIncrease: false,
-        ),
-      ),
-      Visibility(
-          visible: showQuote,
-          child: VerticalDivider(
-              indent: 16, endIndent: 16, color: Colors.grey.shade400)),
-      Visibility(
-          visible: showLink, child: LinkStyleButton(controller: controller)),
-      Visibility(
-        visible: showHorizontalRule,
-        child: InsertEmbedButton(
-          controller: controller,
-          icon: Icons.horizontal_rule,
-        ),
-      ),
+      !showQuote
+          ? const SizedBox.shrink()
+          : ToggleStyleButton(
+              attribute: Attribute.blockQuote,
+              controller: controller,
+              icon: Icons.format_quote,
+            ),
+      !showIndent
+          ? const SizedBox.shrink()
+          : IndentButton(
+              icon: Icons.format_indent_increase,
+              controller: controller,
+              isIncrease: true,
+            ),
+      !showIndent
+          ? const SizedBox.shrink()
+          : IndentButton(
+              icon: Icons.format_indent_decrease,
+              controller: controller,
+              isIncrease: false,
+            ),
+      !showQuote
+          ? const SizedBox.shrink()
+          : VerticalDivider(
+              indent: 16,
+              endIndent: 16,
+              color: Colors.grey.shade400,
+            ),
+      !showLink ? const SizedBox.shrink() : LinkStyleButton(controller: controller),
+      !showHorizontalRule
+          ? const SizedBox.shrink()
+          : InsertEmbedButton(
+              controller: controller,
+              icon: Icons.horizontal_rule,
+            ),
     ]);
   }
 
@@ -1131,7 +1121,7 @@ class _QuillToolbarState extends State<QuillToolbar> {
           SliverFillRemaining(
             hasScrollBody: false,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: widget.children,
             ),
           ),
