@@ -1023,11 +1023,11 @@ class QuillToolbar extends StatefulWidget implements PreferredSizeWidget {
       !showHeaderStyle
           ? const SizedBox.shrink()
           : SelectHeaderStyleButton(controller: controller),
-      VerticalDivider(
-        indent: 16,
-        endIndent: 16,
-        color: Colors.grey.shade400,
-      ),
+      // VerticalDivider(
+      //   indent: 16,
+      //   endIndent: 16,
+      //   color: Colors.grey.shade400,
+      // ),
       !showListNumbers
           ? const SizedBox.shrink()
           : ToggleStyleButton(
@@ -1056,13 +1056,13 @@ class QuillToolbar extends StatefulWidget implements PreferredSizeWidget {
               controller: controller,
               icon: Icons.code,
             ),
-      Visibility(
-          visible: !showListNumbers &&
-              !showListBullets &&
-              !showListCheck &&
-              !showCodeBlock,
-          child: VerticalDivider(
-              indent: 16, endIndent: 16, color: Colors.grey.shade400)),
+      // Visibility(
+      //     visible: !showListNumbers &&
+      //         !showListBullets &&
+      //         !showListCheck &&
+      //         !showCodeBlock,
+      //     child: VerticalDivider(
+      //         indent: 16, endIndent: 16, color: Colors.grey.shade400)),
       !showQuote
           ? const SizedBox.shrink()
           : ToggleStyleButton(
